@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mod Commands Proposal</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,600;1,400&family=Fira+Sans+Condensed:wght@600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one reading column (~70ch) with full-width figures; a letter to lenonk, then the design, then the questions. */
+:root{
+  --bg:#f5f3ee; --surface:#fffdf8; --fg:#1d232b; --muted:#5d6670; --line:#ddd6c8;
+  --accent:#8a5a14; --code-bg:#efe9dc; --chip:#e9dfc8;
+  --sans:'Fira Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --head:'Fira Sans Condensed','Fira Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b1117; --surface:#111a22; --fg:#e6e1d6; --muted:#97a3ad; --line:#24313c;
+  --accent:#e4c077; --code-bg:#16212b; --chip:#2a2416; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1117; --surface:#111a22; --fg:#e6e1d6; --muted:#97a3ad; --line:#24313c;
+  --accent:#e4c077; --code-bg:#16212b; --chip:#2a2416; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 72px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.col{max-width:70ch}
+header{display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--line);padding-bottom:22px}
+.eyebrow{font:600 12px/1 var(--head);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:600 clamp(28px,4.4vw,42px)/1.1 var(--head);margin:0;text-wrap:balance}
+h2{font:600 26px/1.2 var(--head);margin:0;text-wrap:balance}
+h3{font:600 19px/1.3 var(--head);margin:0}
+.meta{color:var(--muted);font-size:14px}
+section{display:flex;flex-direction:column;gap:14px}
+p{margin:0}
+ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+code{font:0.88em var(--mono);background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{margin:0;background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto;font:13.5px/1.55 var(--mono)}
+pre code{background:none;padding:0;font-size:inherit}
+figure{margin:0;display:flex;flex-direction:column;gap:8px}
+figure img{width:100%;height:auto;border-radius:8px;border:1px solid var(--line);display:block}
+figcaption{color:var(--muted);font-size:14px;max-width:80ch}
+.pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:20px}
+.note{border-left:3px solid var(--accent);padding:4px 0 4px 14px;color:var(--fg)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;font-size:14.5px;min-width:520px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 13px var(--head);letter-spacing:.04em;color:var(--muted)}
+.phases li{padding-left:2px}
+.qs li{padding-left:2px}
+.tag{display:inline-block;font:600 11px/1.6 var(--head);letter-spacing:.06em;text-transform:uppercase;background:var(--chip);color:var(--accent);border-radius:4px;padding:0 6px;margin-left:6px;vertical-align:2px}
+.sign{border-top:1px solid var(--line);padding-top:18px;color:var(--muted)}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">vana-client · Lua mods · proposal</span>
+  <h1>Showing a mod's commands and settings to the player</h1>
+  <span class="meta">For lenonk, from Steven (akreao) · 8 November 2026 · design only, nothing coded yet</span>
+</header>
+
+<section class="col">
+  <p>Hi lenonk,</p>
+  <p>You turned down #132 (listing each mod's chat commands in its description), and you were right: the problem it
+  papered over is that the mod system and the player barely talk to each other. A player who turns on a mod has no way to
+  learn what it can do without reading its code. This page is a proper design for that, built on the patterns the mod
+  system already has. The mockups show the idea; the layout and names are yours to change. The questions I'd like you to
+  decide are collected at the end.</p>
+</section>
+
+<section class="col">
+  <h2>The idea in one line</h2>
+  <p>Declare a mod's commands in <code>mod.toml</code>, the same way settings are declared today, and let the client present
+  them: in a Mods window, in game with <code>/lua help</code>, and as suggestions while typing <code>//</code>.</p>
+  <p>Settings already work this way (<code>[settings.&lt;key&gt;]</code>, drawn by the client, read with
+  <code>settings.get</code>). Commands are the missing half: today they exist only once a mod has loaded and called
+  <code>commands.register</code>, with no text the client can show.</p>
+</section>
+
+<section class="col">
+  <h2>1. Commands in mod.toml</h2>
+  <p>One <code>[commands.&lt;name&gt;]</code> table per command; the name is the word after <code>//</code>, and file order
+  is display order.</p>
+<pre><code>[commands.ahbuy]
+args = "&lt;item&gt; &lt;price&gt; [stack]"
+help = "Bid on an item at the auction house in front of you."
+
+[commands.bags]
+help = "The items the Inventory HUD counts."
+forms = [
+  { args = "add &lt;item&gt;",        help = "Count an item." },
+  { args = "addkey &lt;key item&gt;", help = "Count a key item." },
+  { args = "remove &lt;name&gt;",     help = "Stop counting it." },
+  { args = "list",               help = "What it counts." },
+]</code></pre>
+  <ul>
+    <li><b>Readable without loading the mod</b>, so a mod that is off, or one in the catalogue that isn't installed yet,
+    can still show its commands. The catalogue generator copies the table as it copies <code>description</code>.</li>
+    <li><b>Validated like settings:</b> a bad name (spaces, <code>lua</code>, a game command) stops the mod loading with a
+    clear message. Old clients ignore the table, so mods stay loadable everywhere.</li>
+    <li><b>Not enforced at runtime:</b> a mod may still register commands it doesn't declare (dynamic ones). A unit test
+    keeps the bundled mods honest instead: every <code>commands.register("x")</code> has a <code>[commands.x]</code>.</li>
+    <li>A small helper, <code>commands.usage(name)</code>, returns the declared lines, so the 17 bundled mods that keep their
+    own <code>USAGE</code> string can print the manifest's text instead.</li>
+  </ul>
+</section>
+
+<section>
+  <div class="col" style="display:flex;flex-direction:column;gap:14px">
+    <h2>2. A Mods window <span class="tag">modern UI</span></h2>
+    <p>Per-mod pages in the Settings window would make it grow with every mod installed. So everything about mods moves
+    into its own Mods window. The Settings window keeps a single Mods row: a summary and a button that opens the window.</p>
+  </div>
+  <figure>
+    <img src="img/settings-entry.jpg" alt="Settings window, Mods row: counts of Lua mods, DAT packs and updates, and an Open Mods window button" width="1600" height="1000">
+    <figcaption>The Settings window's Mods row: a summary and Open Mods window. Also reachable from the Command Menu and <code>/lua mods</code>.</figcaption>
+  </figure>
+  <figure>
+    <img src="img/mods-window.jpg" alt="Mods window with Installed, Get mods and DATs tabs; Look Changer picked, its Commands tab showing a command list, a form with slot and item pickers, and a Run button" width="1600" height="1000">
+    <figcaption>The Mods window. Tabs: <b>Installed</b>, <b>Get mods</b> (today's Standard mods page) and <b>DATs</b>. The picked mod shows its ON / OFF, version and one-line description, then its own <b>Settings</b> (the <code>[settings]</code> rows), <b>Commands</b> and <b>Permissions</b> (today's grant rows).</figcaption>
+  </figure>
+  <div class="col" style="display:flex;flex-direction:column;gap:14px">
+    <p>A mod's Commands tab works like the Game Master window: the commands on the left, a form for the picked one on
+    the right, the line it will type, <b>Run</b> and <b>Put in chat line</b>, and the mod's replies. Run goes through the
+    normal command path, so the mod gets it as the player's input and no new permission is involved.</p>
+    <p>Plain <code>args</code> give a text box per word. Pickers (a list of choices, item names, zones, party members) need
+    typed parameters, which are optional:</p>
+<pre><code>[commands.look]
+help = "Change how you look, on your screen only."
+forms = [
+  { args = "&lt;slot&gt; &lt;item | none | own&gt;", help = "Wear an item's look in one slot.", params = [
+      { name = "slot", type = "enum", options = ["head", "body", "hands", "legs", "feet", "main", "sub", "range"] },
+      { name = "item", type = "item", also = ["none", "own"] } ] },
+]</code></pre>
+    <p>Types would be the settings types plus game data the client can already list (<code>item</code>,
+    <code>key_item</code>, <code>zone</code>, <code>spell</code>, <code>job</code>, <code>player</code>). Since words split at
+    spaces and quotes don't group, the form writes <code>//look body Kupo Suit</code> and the mod joins the words, as
+    mods do now.</p>
+  </div>
+</section>
+
+<section>
+  <div class="col" style="display:flex;flex-direction:column;gap:14px">
+    <h2>3. In game, in both UIs</h2>
+    <ul>
+      <li><code>/lua help</code> prints one line however many mods are loaded:
+      <code>/lua help &lt;mod&gt;: a mod's commands. Mods: auction-desk, hotbar, loot-rules, …</code></li>
+      <li><code>/lua help &lt;mod&gt;</code> prints that mod's commands with their help; <code>/lua help &lt;command&gt;</code> prints one.</li>
+      <li>"No mod command x." adds which installed mod has it when that mod is off.</li>
+      <li><b>Suggestions while typing <code>//</code></b>: the matching commands over the chat line, with the mod and the
+      help. Up / Down picks, Tab completes. Loaded mods only.</li>
+    </ul>
+  </div>
+  <figure>
+    <img src="img/in-game-help.jpg" alt="Chat log showing /lua help output, a mod's commands, the off-mod hint, and a suggestion list above the chat line while typing //lo" width="1600" height="1000">
+    <figcaption><code>/lua help</code>, <code>/lua help loot-rules</code>, the off-mod hint, and suggestions over the chat line (modern UI).</figcaption>
+  </figure>
+</section>
+
+<section>
+  <div class="col" style="display:flex;flex-direction:column;gap:14px">
+    <h2>4. The classic UI <span class="tag">retail look</span></h2>
+    <p>A classic player should never be shown modern UI unless it's absolutely necessary, so classic doesn't get the
+    Mods window drawn over it. It uses what classic players already use: the chat line, and short retail-style menus.</p>
+    <ol>
+      <li><b>The chat line is the command surface.</b> <code>//</code> suggestions and <code>/lua help</code> work in classic
+      too, drawn in the retail style.</li>
+      <li><b>A list, then a submenu.</b> Config → Settings → Mods is a list like the item list (name, ON / OFF, scroll bar,
+      count in the title; no filter, as retail lists have none). Enter on a mod opens a small submenu like retail's:
+      ON / OFF, Settings, Commands, Permissions.</li>
+      <li><b>Commands is a list only.</b> The help bar shows the picked command's help, the description box its full line;
+      Enter puts the line in the chat line to finish. The form and Run stay in the modern UI.</li>
+      <li><b>Get mods and DATs</b> stay the classic pages they are today.</li>
+    </ol>
+  </div>
+  <div class="pair">
+    <figure>
+      <img src="img/classic-mods.jpg" alt="Classic UI: Mods list in the item list's style with ON and OFF per mod" width="1600" height="854" loading="lazy">
+      <figcaption>The Mods list, in the item list's style.</figcaption>
+    </figure>
+    <figure>
+      <img src="img/classic-mod-menu.jpg" alt="Classic UI: a small submenu beside the list with ON / OFF, Settings, Commands, Permissions" width="1600" height="854" loading="lazy">
+      <figcaption>A mod's submenu.</figcaption>
+    </figure>
+    <figure>
+      <img src="img/classic-mod-commands.jpg" alt="Classic UI: a mod's commands list with help bar and description box" width="1600" height="854" loading="lazy">
+      <figcaption>The Commands page: help bar and description box.</figcaption>
+    </figure>
+    <figure>
+      <img src="img/classic-chat-suggest.jpg" alt="Classic UI: suggestion list above the chat line and /lua help lines in the log" width="1600" height="854" loading="lazy">
+      <figcaption>Suggestions over the chat line, retail style.</figcaption>
+    </figure>
+  </div>
+  <p class="meta col">The classic mockups are drawn over docs/screenshots/classic-config.jpg; the panels and fonts are close copies, not the game's own art.</p>
+</section>
+
+<section class="col">
+  <h2>5. Settings: finish what's planned</h2>
+  <p>The settings design is right; the gap is what the page can't draw yet, which pushes options into commands.</p>
+  <ul>
+    <li>Draw <code>string</code>, <code>colour</code> and <code>key</code> settings (docs/lua-mods.md 4.12 already lists them;
+    the key element you added for mod windows in 77b9dfd fits <code>key</code>).</li>
+    <li>Then move bundled mods' fixed-shape command options (<code>//x on|off</code>, <code>//x size 3</code>) into
+    <code>[settings]</code>. Lists the player builds (<code>//bags add &lt;item&gt;</code>) stay commands.</li>
+  </ul>
+</section>
+
+<section class="col">
+  <h2>How it would land</h2>
+  <p>One PR per step, each branched from master and usable on its own.</p>
+  <ol class="phases">
+    <li><b>Manifest, docs, test.</b> <code>[commands]</code> parsed and validated; guide.md and reference/commands.md; <code>mods.installed()</code> gains <code>commands</code>; stubs regenerated; every bundled mod's commands declared and the catalogue regenerated.</li>
+    <li><b>Mods window.</b> The mod pages, DATs and Standard pages move out of Settings into the window; each mod's Settings, Commands (a list at first) and Permissions; the classic list and submenu.</li>
+    <li><b>In game.</b> <code>/lua help</code>, the off-mod hint, <code>//</code> suggestions, <code>commands.usage</code>.</li>
+    <li><b>Settings types.</b> <code>string</code>, <code>colour</code>, <code>key</code> rows, then the settings audit of the bundled mods.</li>
+    <li><b>Run from the Mods window.</b> Typed <code>params</code>, the form and Run (modern UI).</li>
+  </ol>
+</section>
+
+<section class="col">
+  <h2>Questions for you</h2>
+  <ol class="qs">
+    <li><b>Manifest or <code>register</code>?</b> This puts commands in mod.toml so they're readable before load. Would you rather have <code>commands.register(name, fn, { args, help })</code>, or both?</li>
+    <li><b>Shape and names:</b> <code>args</code> / <code>help</code> / <code>forms</code>, or a single <code>usage</code> list of strings?</li>
+    <li><b>Undeclared commands:</b> allowed silently (as proposed), a note on F12, or an error?</li>
+    <li><b>Aliases</b> (docs/lua-mods.md 4.4): <code>aliases = ["ahb"]</code> in the same table now, or later?</li>
+    <li><b>The help command's name:</b> <code>/lua help</code>, <code>//help</code>, or something else?</li>
+    <li><b>Localised text</b> (docs/lua-mods.md 3.4): should <code>help</code> take a per-language table from the start?</li>
+    <li><b>A separate Mods window</b> reachable from Settings: OK to take the mod pages out of the Settings window?</li>
+    <li><b>Running commands from the Mods window:</b> wanted? If so, are typed <code>params</code> the way to get pickers, or should a mod build its own form with <code>ui.window</code>?</li>
+    <li><b><code>//</code> suggestions</b> over the chat line, in both UIs?</li>
+    <li><b>Classic UI:</b> is the list, submenu and chat-line approach the right fit?</li>
+    <li><b>Bundled mods' rows on Extras tabs</b> (<code>tab</code> / <code>place</code>, e.g. Map Overlay): stay where the replaced feature had them, or move to the mod's Settings tab?</li>
+    <li><b>An Open button:</b> bundled mod windows open only by command. Should a command carry <code>opens = true</code> so the mod's header shows Open?</li>
+  </ol>
+</section>
+
+<p class="sign col">Thanks for reading. Happy to rework any of this, or to start with step 1 alone, which is small and useful by itself. — Steven</p>
+</div>
+</body>
+</html>
