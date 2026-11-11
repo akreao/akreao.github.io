@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MODLOG Gaps Progress</title>
+<meta name="description" content="How many of the items in vana-client's MODLOG gaps list are built or answered, regenerated from the repository.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,400;0,600;1,400&family=Fira+Sans+Condensed:wght@600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Same tokens as /vana-client/mod-commands/. Status colours: done green, built-not-checked teal, partly amber, open grey-red, blocked slate. */
+:root{
+  --bg:#f5f3ee; --surface:#fffdf8; --fg:#1d232b; --muted:#5d6670; --line:#ddd6c8;
+  --accent:#8a5a14; --code-bg:#efe9dc; --chip:#e9dfc8;
+  --done:#3f7d4e; --unverified:#4f9a95; --partial:#c99a3b; --open:#c9c0b0; --blocked:#7d8794;
+  --sans:'Fira Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --head:'Fira Sans Condensed','Fira Sans',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b1117; --surface:#111a22; --fg:#e6e1d6; --muted:#97a3ad; --line:#24313c;
+  --accent:#e4c077; --code-bg:#16212b; --chip:#2a2416;
+  --done:#6fbf7f; --unverified:#6cc4bd; --partial:#e4c077; --open:#2e3b47; --blocked:#5d6a77; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1117; --surface:#111a22; --fg:#e6e1d6; --muted:#97a3ad; --line:#24313c;
+  --accent:#e4c077; --code-bg:#16212b; --chip:#2a2416;
+  --done:#6fbf7f; --unverified:#6cc4bd; --partial:#e4c077; --open:#2e3b47; --blocked:#5d6a77; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.6 var(--sans);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:40px 72px}
+.wrap{max-width:1040px;margin:0 auto;display:flex;flex-direction:column;gap:28px}
+.col{max-width:70ch}
+header{display:flex;flex-direction:column;gap:6px;border-bottom:1px solid var(--line);padding-bottom:22px}
+.eyebrow{font:600 12px/1 var(--head);letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+h1{font:600 clamp(28px,4.4vw,42px)/1.1 var(--head);margin:0;text-wrap:balance}
+h2{font:600 26px/1.2 var(--head);margin:0;text-wrap:balance}
+.meta{color:var(--muted);font-size:14px}
+section{display:flex;flex-direction:column;gap:14px}
+p{margin:0}
+ul{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px}
+code{font:0.88em var(--mono);background:var(--code-bg);padding:1px 5px;border-radius:4px}
+.note{border-left:3px solid var(--accent);padding:4px 0 4px 14px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.hero{display:grid;grid-template-columns:auto 1fr;gap:12px 28px;align-items:end}
+.big{font:600 clamp(56px,11vw,96px)/0.9 var(--head);font-variant-numeric:tabular-nums}
+.big small{font-size:.42em;color:var(--muted);margin-left:2px}
+.hero p{color:var(--muted);max-width:52ch}
+.hero p b{color:var(--fg)}
+@media (max-width:560px){.hero{grid-template-columns:1fr}}
+
+.bar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:var(--open);gap:2px}
+.bar span{display:block;height:100%}
+.bar.sm{height:10px;border-radius:4px;gap:1px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 20px;font-size:14px;color:var(--muted);margin:0;padding:0;list-style:none}
+.legend li{display:flex;align-items:center;gap:7px}
+.legend i{width:11px;height:11px;border-radius:3px;display:inline-block}
+.legend b{color:var(--fg);font-variant-numeric:tabular-nums;font-weight:600}
+
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;font-size:14.5px;width:100%}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font:600 13px var(--head);letter-spacing:.04em;color:var(--muted)}
+td.n{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+th.n{text-align:right}
+td.barcell{width:34%;min-width:140px}
+@media (max-width:560px){th,td{padding:8px 6px}td.barcell{min-width:70px;width:26%}table{font-size:14px}}
+tr.aside td{color:var(--muted)}
+
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:14px 14px 8px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font:12px var(--sans);fill:var(--muted)}
+.chart .grid{stroke:var(--line)}
+.chart .line{fill:none;stroke:var(--done);stroke-width:2.5;stroke-linejoin:round}
+.chart .area{fill:var(--done);opacity:.12}
+.chart .dot{fill:var(--done)}
+.tip{font:13px var(--sans);color:var(--muted);min-height:1.6em;padding:4px 2px 0}
+
+.sign{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:14px}
+#err{display:none}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <span class="eyebrow">vana-client · retail parity · progress</span>
+  <h1>How much of the MODLOG gaps list is done</h1>
+  <span class="meta" id="meta">Loading the latest numbers…</span>
+</header>
+
+<p class="note col" id="err">The data file did not load, so there are no numbers to show. It lives next to this page as <code>data.json</code>.</p>
+
+<section id="top" hidden>
+  <div class="hero">
+    <div class="big" id="pct">0<small>%</small></div>
+    <p id="lead"></p>
+  </div>
+  <div class="bar" id="bar" role="img"></div>
+  <ul class="legend" id="legend"></ul>
+</section>
+
+<section class="col">
+  <h2>What this number measures</h2>
+  <p>vana-client keeps a list of everything its development journal (<code>MODLOG.md</code>) marks as not built, not
+  known or not checked against the retail client: <a id="doclink" href="https://github.com/akreao/vana-client/blob/custom/docs/re/modlog-gaps.md">docs/re/modlog-gaps.md</a>.
+  This page counts the rows of that list by their status.</p>
+  <ul>
+    <li><b>It is not a measure of all of retail.</b> The list only holds gaps somebody wrote down. Retail features that
+    were never noted are not in it, and one row can be a single flag or a whole window.</li>
+    <li><b>Built or answered</b> counts rows whose status is built, matches retail, or answered by reading the DLL,
+    including rows built but not yet seen in game.</li>
+    <li><b>Partly built</b> rows ("built apart from …") count as not done yet.</li>
+    <li>Left out of the percentage: rows blocked because the server (LSB) never sends the data, known limitations
+    that are accepted, and our own non-retail choices and upstream questions.</li>
+    <li>Rows the list moved to "Closed by later entries" were done before the list was written, so they are shown
+    separately and not counted.</li>
+    <li>The list grows when a new retail client adds work (the November 2026 update added a section), so the
+    percentage can drop even while work gets done.</li>
+  </ul>
+</section>
+
+<section id="hist" hidden>
+  <h2 class="col">Over time</h2>
+  <p class="col meta">One point per change to the gaps list on the <code>custom</code> branch. Hover or tap a point for its numbers.</p>
+  <div class="chart"><svg id="svg" viewBox="0 0 960 300" role="img" aria-label="Percentage built or answered over time"></svg><div class="tip" id="tip"></div></div>
+</section>
+
+<section id="bysec" hidden>
+  <h2 class="col">By area</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>Area</th><th class="n">Built</th><th class="n">Rows</th><th></th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+</section>
+
+<footer class="sign" id="foot">The numbers are regenerated from the repository by a scheduled job; nothing on this page is typed by hand.</footer>
+</div>
+
+<script>
+const CATS=[
+  ["done","Built or answered"],
+  ["unverified","Built, not yet checked in game"],
+  ["partial","Partly built"],
+  ["open","Not built or not known"],
+  ["blocked","Blocked by the server"],
+];
+const fmtDate=s=>new Date(s).toLocaleDateString(undefined,{day:"numeric",month:"long",year:"numeric"});
+const el=(t,a={},...k)=>{const e=document.createElement(t);for(const[x,v]of Object.entries(a))x==="text"?e.textContent=v:e.setAttribute(x,v);e.append(...k);return e};
+
+function fillBar(bar,c,total){
+  bar.replaceChildren();
+  for(const[k]of CATS){if(!c[k])continue;bar.append(el("span",{style:`width:${100*c[k]/total}%;background:var(--${k})`,title:`${c[k]}`}))}
+}
+
+fetch("data.json",{cache:"no-cache"}).then(r=>{if(!r.ok)throw r.status;return r.json()}).then(d=>{
+  const t=d.totals, src=d.source;
+  document.getElementById("meta").textContent=
+    `Counted from ${src.path} on ${src.branch}, as of ${fmtDate(src.commit_date)}`;
+  document.getElementById("doclink").href=`https://github.com/${src.repo}/blob/${src.commit}/${src.path}`;
+  document.getElementById("pct").firstChild.textContent=Math.round(d.percent);
+  document.getElementById("lead").innerHTML=
+    `<b>${d.built} of ${d.tracked}</b> rows in the gaps list are built or answered`+
+    (t.unverified?`, ${t.unverified} of them not yet checked in game`:"")+`. `+
+    `${t.partial} more are partly built and ${t.open} are open.`;
+  const shown=t.done+t.unverified+t.partial+t.open+t.blocked;
+  const bar=document.getElementById("bar");fillBar(bar,t,shown);
+  bar.setAttribute("aria-label",CATS.map(([k,l])=>`${l}: ${t[k]}`).join(", "));
+  const lg=document.getElementById("legend");
+  for(const[k,l]of CATS)lg.append(el("li",{},el("i",{style:`background:var(--${k})`}),el("span",{text:l+" "}),el("b",{text:t[k]})));
+  lg.append(el("li",{},el("span",{text:"Already closed when the list was made (not counted) "}),el("b",{text:d.closed_earlier})));
+  document.getElementById("top").hidden=false;
+
+  const tb=document.getElementById("rows");
+  for(const s of d.sections){
+    const rows=s.done+s.unverified+s.partial+s.open+s.blocked;
+    const aside=!rows;
+    const title=s.title.replace(/^\d+\.\s*/,"");
+    const b=el("div",{class:"bar sm"});if(rows)fillBar(b,s,rows);
+    const tr=el("tr",aside?{class:"aside"}:{},
+      el("td",{text:title}),
+      el("td",{class:"n",text:aside?"–":`${s.done+s.unverified}`}),
+      el("td",{class:"n",text:aside?(s.excluded?`${s.excluded} not counted`:"list only"):`${rows}`}),
+      el("td",{class:"barcell"},aside?"":b));
+    tb.append(tr);
+  }
+  document.getElementById("bysec").hidden=false;
+
+  const h=d.history; if(h.length>1){document.getElementById("hist").hidden=false;drawHistory(h)}
+  document.getElementById("foot").innerHTML=
+    `Regenerated from <a href="https://github.com/${src.repo}/commit/${src.commit}">${src.repo}@${src.commit.slice(0,10)}</a> by a scheduled job on this site; nothing on this page is typed by hand. `+
+    `The live-check backlog in the list holds ${d.live_backlog} more lines of built features waiting for an in-game check.`;
+}).catch(()=>{document.getElementById("err").style.display="block";document.getElementById("meta").textContent="No data"});
+
+function drawHistory(h){
+  const svg=document.getElementById("svg"),NS="http://www.w3.org/2000/svg";
+  const W=Math.round(Math.max(320,Math.min(960,svg.getBoundingClientRect().width||960))),H=W<600?220:300,L=44,R=12,T=12,B=34;
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const max=Math.max(50,Math.ceil(Math.max(...h.map(p=>p.percent))/10)*10+10);
+  const x=i=>L+(W-L-R)*(h.length===1?0:i/(h.length-1)), y=v=>T+(H-T-B)*(1-v/max);
+  const s=(t,a)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);return e};
+  for(let v=0;v<=max;v+=max>60?20:10){
+    svg.append(s("line",{class:"grid",x1:L,x2:W-R,y1:y(v),y2:y(v)}));
+    const tx=s("text",{x:L-8,y:y(v)+4,"text-anchor":"end"});tx.textContent=v+"%";svg.append(tx);
+  }
+  let last="",lastX=-1e9;
+  h.forEach((p,i)=>{const day=p.date.slice(0,10);if(day!==last&&x(i)-lastX>=56){last=day;lastX=x(i);
+    const tx=s("text",{x:x(i),y:H-10,"text-anchor":i===0?"start":"middle"});
+    tx.textContent=new Date(p.date).toLocaleDateString(undefined,{day:"numeric",month:"short"});svg.append(tx)}});
+  const pts=h.map((p,i)=>`${x(i)},${y(p.percent)}`);
+  svg.append(s("path",{class:"area",d:`M${x(0)},${y(0)} L${pts.join(" L")} L${x(h.length-1)},${y(0)} Z`}));
+  svg.append(s("polyline",{class:"line",points:pts.join(" ")}));
+  const tip=document.getElementById("tip");
+  const show=p=>tip.textContent=`${fmtDate(p.date)}: ${p.built} of ${p.tracked} built or answered (${p.percent}%), commit ${p.commit}`;
+  h.forEach((p,i)=>{
+    const c=s("circle",{class:"dot",cx:x(i),cy:y(p.percent),r:i===h.length-1?5:3});
+    const hit=s("circle",{cx:x(i),cy:y(p.percent),r:12,fill:"transparent",tabindex:0});
+    hit.addEventListener("mouseenter",()=>show(p));hit.addEventListener("focus",()=>show(p));hit.addEventListener("click",()=>show(p));
+    svg.append(c,hit);
+  });
+  show(h[h.length-1]);
+  document.getElementById("hist").hidden=false;
+}
+</script>
+</body>
+</html>
