@@ -1,0 +1,53 @@
+name: MODLOG progress data
+
+# Regenerates vana-client/modlog/data.json from akreao/vana-client's
+# docs/re/modlog-gaps.md (custom branch) and commits it when it changed.
+on:
+  schedule:
+    - cron: "17 */3 * * *"   # every three hours
+  workflow_dispatch:
+  repository_dispatch:        # lets vana-client trigger a refresh after a push
+    types: [modlog-gaps-updated]
+  push:
+    branches: [main]
+    paths:
+      - tools/modlog_progress.py
+      - .github/workflows/modlog-progress.yml
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: modlog-progress
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch the gaps doc's history from vana-client
+        run: |
+          git clone --quiet --filter=blob:none --no-checkout --single-branch --branch custom \
+            https://github.com/akreao/vana-client.git vana
+
+      - name: Count statuses
+        run: python3 tools/modlog_progress.py vana origin/custom vana-client/modlog/data.json
+
+      - name: Commit if changed
+        run: |
+          if git diff --quiet -- vana-client/modlog/data.json; then
+            echo "No change."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vana-client/modlog/data.json
+          git commit -m "MODLOG progress: refresh data"
+          git push
+          # Pushes made with the workflow token may not start a Pages build on their own.
+          gh api -X POST "repos/${{ github.repository }}/pages/builds" || echo "Pages build request failed; the next push will publish it."
+        env:
+          GH_TOKEN: ${{ github.token }}
