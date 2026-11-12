@@ -3,60 +3,60 @@
   "repo": "akreao/vana-client",
   "branch": "custom",
   "path": "docs/re/modlog-gaps.md",
-  "commit": "432d95ada4d2b0b381765fe12ab186370b4e2cb1",
-  "commit_date": "2026-11-11T17:28:12-05:00"
+  "commit": "733e23120f2150fd220fea67a9c4141366d1f778",
+  "commit_date": "2026-11-11T21:30:31-05:00"
  },
- "tracked": 196,
- "built": 72,
- "percent": 36.7,
+ "tracked": 200,
+ "built": 99,
+ "percent": 49.5,
  "totals": {
-  "done": 59,
-  "unverified": 13,
+  "done": 88,
+  "unverified": 11,
   "partial": 13,
-  "open": 111,
+  "open": 88,
   "blocked": 12,
   "accepted": 3,
-  "excluded": 6
+  "excluded": 7
  },
  "closed_earlier": 78,
  "live_backlog": 12,
  "sections": [
   {
    "title": "1. Network, session, lobby and sign-in",
-   "done": 2,
+   "done": 3,
    "unverified": 1,
    "partial": 0,
-   "open": 14,
+   "open": 13,
    "blocked": 0,
    "accepted": 0,
    "excluded": 0
   },
   {
    "title": "2. Event VM and cutscenes",
-   "done": 7,
-   "unverified": 4,
+   "done": 11,
+   "unverified": 2,
    "partial": 0,
-   "open": 9,
+   "open": 10,
    "blocked": 0,
    "accepted": 1,
-   "excluded": 0
+   "excluded": 1
   },
   {
    "title": "3. Actors, motions and schedulers",
-   "done": 10,
+   "done": 12,
    "unverified": 1,
-   "partial": 4,
-   "open": 4,
+   "partial": 3,
+   "open": 3,
    "blocked": 1,
    "accepted": 0,
    "excluded": 0
   },
   {
    "title": "4. Effects, lighting and rendering",
-   "done": 19,
+   "done": 21,
    "unverified": 1,
    "partial": 1,
-   "open": 7,
+   "open": 5,
    "blocked": 0,
    "accepted": 2,
    "excluded": 0
@@ -73,20 +73,20 @@
   },
   {
    "title": "6. HUD, chat log and text",
-   "done": 8,
+   "done": 14,
    "unverified": 1,
-   "partial": 7,
-   "open": 10,
+   "partial": 5,
+   "open": 6,
    "blocked": 1,
    "accepted": 0,
    "excluded": 0
   },
   {
    "title": "7. Menus and windows",
-   "done": 8,
+   "done": 19,
    "unverified": 4,
-   "partial": 0,
-   "open": 36,
+   "partial": 3,
+   "open": 23,
    "blocked": 1,
    "accepted": 0,
    "excluded": 1
@@ -113,10 +113,10 @@
   },
   {
    "title": "10. Combat and battle",
-   "done": 1,
+   "done": 4,
    "unverified": 0,
    "partial": 0,
-   "open": 7,
+   "open": 4,
    "blocked": 0,
    "accepted": 0,
    "excluded": 0
@@ -788,6 +788,76 @@
    "blocked": 12,
    "accepted": 3,
    "excluded": 6
+  },
+  {
+   "date": "2026-11-11T18:22:37-05:00",
+   "commit": "4c08c23e3d",
+   "tracked": 196,
+   "built": 94,
+   "percent": 48.0,
+   "done": 81,
+   "unverified": 13,
+   "partial": 14,
+   "open": 88,
+   "blocked": 12,
+   "accepted": 3,
+   "excluded": 6
+  },
+  {
+   "date": "2026-11-11T19:10:26-05:00",
+   "commit": "5c1baea54b",
+   "tracked": 196,
+   "built": 96,
+   "percent": 49.0,
+   "done": 83,
+   "unverified": 13,
+   "partial": 13,
+   "open": 87,
+   "blocked": 12,
+   "accepted": 3,
+   "excluded": 6
+  },
+  {
+   "date": "2026-11-11T19:23:35-05:00",
+   "commit": "ca3ca1ab2d",
+   "tracked": 196,
+   "built": 98,
+   "percent": 50.0,
+   "done": 85,
+   "unverified": 13,
+   "partial": 13,
+   "open": 85,
+   "blocked": 12,
+   "accepted": 3,
+   "excluded": 6
+  },
+  {
+   "date": "2026-11-11T19:45:09-05:00",
+   "commit": "4be93170c3",
+   "tracked": 197,
+   "built": 99,
+   "percent": 50.3,
+   "done": 86,
+   "unverified": 13,
+   "partial": 13,
+   "open": 85,
+   "blocked": 12,
+   "accepted": 3,
+   "excluded": 6
+  },
+  {
+   "date": "2026-11-11T21:30:31-05:00",
+   "commit": "733e23120f",
+   "tracked": 200,
+   "built": 99,
+   "percent": 49.5,
+   "done": 88,
+   "unverified": 11,
+   "partial": 13,
+   "open": 88,
+   "blocked": 12,
+   "accepted": 3,
+   "excluded": 7
   }
  ]
 }
