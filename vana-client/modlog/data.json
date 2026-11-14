@@ -3,14 +3,14 @@
   "repo": "akreao/vana-client",
   "branch": "custom",
   "path": "docs/re/modlog-gaps.md",
-  "commit": "90937272e7a552acfcf29cd3e9c1ebd7770c433d",
-  "commit_date": "2026-11-14T00:57:42-05:00"
+  "commit": "d0505e1523d64b10a52289da5c26bdef4a78d613",
+  "commit_date": "2026-11-14T09:50:39-05:00"
  },
- "tracked": 206,
- "built": 104,
- "percent": 50.5,
+ "tracked": 207,
+ "built": 105,
+ "percent": 50.7,
  "totals": {
-  "done": 93,
+  "done": 94,
   "unverified": 11,
   "partial": 14,
   "open": 88,
@@ -23,7 +23,7 @@
  "sections": [
   {
    "title": "1. Network, session, lobby and sign-in",
-   "done": 6,
+   "done": 7,
    "unverified": 1,
    "partial": 1,
    "open": 15,
@@ -922,6 +922,20 @@
    "built": 104,
    "percent": 50.5,
    "done": 93,
+   "unverified": 11,
+   "partial": 14,
+   "open": 88,
+   "blocked": 12,
+   "accepted": 4,
+   "excluded": 7
+  },
+  {
+   "date": "2026-11-14T09:50:39-05:00",
+   "commit": "d0505e1523",
+   "tracked": 207,
+   "built": 105,
+   "percent": 50.7,
+   "done": 94,
    "unverified": 11,
    "partial": 14,
    "open": 88,
